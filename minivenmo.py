@@ -3,22 +3,22 @@ from datetime import datetime
 from enum import Enum
 
 
-
 class ActivityType(Enum):
     PAYMENT = "payment"
     FRIEND_ADDED = "friend_added"
 
 
-
 class Activity:
 
-    def __init__(self, activity_type: ActivityType,
-                 timestamp: datetime,
-                 actor: 'User',
-                 target: Optional['User'] = None,
-                 amount: Optional[float] = None,
-                 note: Optional[str] = None):
-
+    def __init__(
+        self,
+        activity_type: ActivityType,
+        timestamp: datetime,
+        actor: "User",
+        target: Optional["User"] = None,
+        amount: Optional[float] = None,
+        note: Optional[str] = None,
+    ):
 
         self.activity_type = activity_type
         self.timestamp = timestamp
@@ -37,15 +37,20 @@ class Activity:
 
 
 class CreditCard:
-    def __init__(self, card_number: str, cardholder_name: str,
-                 expiry_date: str, cvv: str, balance: float = 0.0):
+    def __init__(
+        self,
+        card_number: str,
+        cardholder_name: str,
+        expiry_date: str,
+        cvv: str,
+        balance: float = 0.0,
+    ):
 
         self.card_number = card_number
         self.cardholder_name = cardholder_name
         self.expiry_date = expiry_date
         self.cvv = cvv
         self.balance = balance
-
 
     def charge(self, amount: float):
         if amount <= 0:
@@ -61,13 +66,17 @@ class CreditCard:
         return self.balance
 
 
-
 class User:
-    def __init__(self, username: str, balance: float = 0.0, credit_card: Optional[CreditCard] = None):
+    def __init__(
+        self,
+        username: str,
+        balance: float = 0.0,
+        credit_card: Optional[CreditCard] = None,
+    ):
         self.username = username
         self.balance = balance
         self.credit_card = credit_card
-        self.friends: List['User'] = []
+        self.friends: List["User"] = []
         self.activity_feed: List[Activity] = []
 
     def get_username(self):
@@ -76,23 +85,23 @@ class User:
     def get_balance(self):
         return self.balance
 
-    def add_friend(self, friend: 'User'):
+    def add_friend(self, friend: "User"):
         if friend is None:
             return False
 
         if friend == self:
             return False
-        
+
         if friend in self.friends:
             return False
-            
+
         self.friends.append(friend)
 
         activity = Activity(
             activity_type=ActivityType.FRIEND_ADDED,
             timestamp=datetime.now(),
             actor=self,
-            target=friend
+            target=friend,
         )
 
         self.activity_feed.append(activity)
@@ -100,7 +109,7 @@ class User:
 
         return True
 
-    def pay(self, recipient: 'User', amount: float, note: str = ""):
+    def pay(self, recipient: "User", amount: float, note: str = ""):
         if recipient is None:
             return False
 
@@ -129,7 +138,7 @@ class User:
             actor=self,
             target=recipient,
             amount=amount,
-            note=note
+            note=note,
         )
 
         self.activity_feed.append(activity)
@@ -145,8 +154,13 @@ class MiniVenmo:
     def __init__(self):
         self.users: Dict[str, User] = {}
 
-    def create_user(self, username: str, balance: float = 0.0, credit_card: Optional[CreditCard] = None):
-        if username in self.users: # User already exists
+    def create_user(
+        self,
+        username: str,
+        balance: float = 0.0,
+        credit_card: Optional[CreditCard] = None,
+    ):
+        if username in self.users:  # User already exists
             return None
 
         user = User(username, balance, credit_card)
@@ -155,7 +169,6 @@ class MiniVenmo:
 
     def get_user(self, username: str):
         return self.users.get(username)
-
 
     def render_feed(self):
         all_activities: List[Activity] = []
@@ -170,4 +183,3 @@ class MiniVenmo:
         all_activities.sort(key=lambda x: x.timestamp, reverse=True)
 
         return "\n".join(repr(activity) for activity in all_activities)
-
