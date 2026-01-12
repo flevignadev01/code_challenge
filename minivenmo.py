@@ -29,7 +29,7 @@ class Activity:
 
     def __repr__(self):
         if self.activity_type == ActivityType.PAYMENT:
-            return f"{self.actor.username} paid {self.target.username} ${self.amount} for {self.note}"
+            return f"{self.actor.username} paid {self.target.username} ${self.amount:.2f} for {self.note}"
         elif self.activity_type == ActivityType.FRIEND_ADDED:
             return f"{self.actor.username} added {self.target.username} as a friend"
 
@@ -82,6 +82,10 @@ class User:
 
         if friend == self:
             return False
+        
+        if friend in self.friends:
+            return False
+            
         self.friends.append(friend)
 
         activity = Activity(
@@ -154,4 +158,16 @@ class MiniVenmo:
 
 
     def render_feed(self):
-        ...
+        all_activities: List[Activity] = []
+        seen_activities = set()
+        for user in self.users.values():
+            for activity in user.activity_feed:
+                activity_id = id(activity)
+                if activity_id not in seen_activities:
+                    seen_activities.add(activity_id)
+                    all_activities.append(activity)
+
+        all_activities.sort(key=lambda x: x.timestamp, reverse=True)
+
+        return "\n".join(repr(activity) for activity in all_activities)
+
